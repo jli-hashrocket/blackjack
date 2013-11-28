@@ -10,8 +10,8 @@ class Blackjack
 
   def initialize
     @deck = build_deck
-    @score = 0
-    @dealer_score = 0
+    @hand = []
+    @dealer_hand = []
   end
 
   def build_deck
@@ -27,11 +27,11 @@ class Blackjack
 
   def deal_hand(person)
     next_card = @deck.pop
-    puts "Player was dealt #{next_card}"
+    puts "#{person} was dealt #{next_card}"
     next_card
   end
 
-  def score(hand, person)
+  def score(hand)
     score = 0
     hand.each do |card|
       score += SCORE[card[0,card.length-1]]
@@ -39,38 +39,55 @@ class Blackjack
     score
   end
 
+  def bust?(score, hand)
+    if score > 21
+      return true
+    else
+      return false
+    end
+  end
+
+  def compare_scores(dealer_score=0, player_score=0)
+    if dealer_score > player_score || dealer_score == player_score || player_score > 21
+      puts "Bust! You lose!"
+      abort
+    elsif player_score > dealer_score && player_score < 22
+      puts "You win!"
+      abort
+    end
+  end
+
   def start_game
     # Takes the next card from the top of the deck.
+    continue = true
     puts "Welcome to Blackjack!"
-    hand = []
-    dealer_hand = []
-    hand << deal_hand("Player") << deal_hand("Player")
-    score = score(hand, "Player")
-    puts "#{person} score is: #{@score} "
-
-    while score <= 21
+    @hand << deal_hand("Player") << deal_hand("Player")
+    @new_score = score(@hand)
+    puts "Player score is: #{@new_score} "
+    while continue == true
       print "Hit or Stand (H/S): "
       option = gets.chomp.downcase
       if option == 'h'
-        hand << deal_hand("Player")
-        score = score(hand, "Player")
-        puts "#{person} score is: #{score} "
-        if score > 21
-          puts "Bust! You lose!"
+        @hand << deal_hand("Player")
+        @new_score = score(@hand)
+        puts "Player score #{@new_score}"
+        if bust?(@new_score, @hand)
+          puts "Bust! You lose."
           break
         end
       elsif option == 's'
-        dealer_hand << deal_hand("Dealer") << deal_hand("Dealer")
-        dealer_score(hand, "Dealer")
-        while @dealer_score < 17
-          dealer_hand << deal_hand("Dealer")
-          dealer_score(hand, "Dealer")
+        @dealer_hand << deal_hand("Dealer") << deal_hand("Dealer")
+        @dealer_score = score(@dealer_hand)
+        puts "Dealer score is #{@dealer_score}"
+        until @dealer_score >= 17
+          @dealer_hand << deal_hand("Dealer")
+          @dealer_score = score(@dealer_hand)
+          puts "Dealer score is: #{@dealer_score}"
         end
-        if @dealer_score > @score
-          puts "Dealer wins"
-        end
+        break
       end
     end
+    compare_scores(@dealer_score,@new_score)
   end
 end
 
