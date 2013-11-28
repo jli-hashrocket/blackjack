@@ -33,27 +33,43 @@ class Blackjack
 
   def score(hand)
     score = 0
+    aces = 0
     hand.each do |card|
-      score += SCORE[card[0,card.length-1]]
+      if card != 'A'
+        score += SCORE[card[0,card.length-1]]
+      else
+        aces += 1
+      end
+    end
+    score = aces_score(aces,score)
+    score
+  end
+
+  def aces_score(ace_num, score)
+    ace_num.times do
+      if score + SCORE['A'] + (ace_num - 1) <= 21
+        score += SCORE['A']
+      else
+        score += 1
+      end
     end
     score
   end
 
-  def bust?(score, hand)
-    if score > 21
-      return true
-    else
-      return false
-    end
+  def bust?(score)
+    return true if score > 21
+    return false
   end
 
-  def compare_scores(dealer_score=0, player_score=0)
-    if dealer_score > player_score || dealer_score == player_score || player_score > 21
-      puts "Bust! You lose!"
-      abort
-    elsif player_score > dealer_score && player_score < 22
-      puts "You win!"
-      abort
+  def compare_scores(dealer_score = 0, player_score = 0)
+    if !dealer_score.nil?
+      if (dealer_score > player_score && dealer_score < 22) || dealer_score == player_score || player_score > 21
+        puts "Bust! You lose!"
+        abort
+      elsif (player_score > dealer_score && player_score < 22) || dealer_score > 21
+        puts "You win!"
+        abort
+      end
     end
   end
 
@@ -71,7 +87,7 @@ class Blackjack
         @hand << deal_hand("Player")
         @new_score = score(@hand)
         puts "Player score #{@new_score}"
-        if bust?(@new_score, @hand)
+        if bust?(@new_score)
           puts "Bust! You lose."
           break
         end
@@ -83,11 +99,13 @@ class Blackjack
           @dealer_hand << deal_hand("Dealer")
           @dealer_score = score(@dealer_hand)
           puts "Dealer score is: #{@dealer_score}"
+          if bust?(@dealer_score)
+            break
+          end
         end
-        break
       end
+      compare_scores(@dealer_score,@new_score)
     end
-    compare_scores(@dealer_score,@new_score)
   end
 end
 
