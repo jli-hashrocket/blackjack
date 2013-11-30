@@ -35,7 +35,7 @@ class Blackjack
     score = 0
     aces = 0
     hand.each do |card|
-      if card != 'A'
+      if !card.include?('A')
         score += SCORE[card[0,card.length-1]]
       else
         aces += 1
